@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.75rem;
+
+    /* Warm Food Palette — terracotta + cream */
+    --background: 0.975 0.012 80;
+    --foreground: 0.22 0.04 48;
+
+    --card: 0.99 0.008 78;
+    --card-foreground: 0.22 0.04 48;
+
+    --popover: 0.99 0.008 78;
+    --popover-foreground: 0.22 0.04 48;
+
+    /* Terracotta primary */
+    --primary: 0.61 0.17 38;
+    --primary-foreground: 0.98 0.008 78;
+
+    /* Warm sand secondary */
+    --secondary: 0.93 0.025 78;
+    --secondary-foreground: 0.32 0.04 48;
+
+    --muted: 0.94 0.015 75;
+    --muted-foreground: 0.55 0.04 60;
+
+    /* Amber accent */
+    --accent: 0.82 0.12 68;
+    --accent-foreground: 0.22 0.04 48;
+
+    --destructive: 0.58 0.19 26;
+    --destructive-foreground: 0.98 0.008 78;
+
+    --border: 0.88 0.025 78;
+    --input: 0.88 0.025 78;
+    --ring: 0.61 0.17 38;
+
+    --chart-1: 0.61 0.17 38;
+    --chart-2: 0.55 0.15 145;
+    --chart-3: 0.74 0.15 62;
+    --chart-4: 0.5 0.14 250;
+    --chart-5: 0.65 0.18 22;
+
+    --sidebar: 0.975 0.012 80;
+    --sidebar-foreground: 0.22 0.04 48;
+    --sidebar-primary: 0.61 0.17 38;
+    --sidebar-primary-foreground: 0.98 0.008 78;
+    --sidebar-accent: 0.93 0.025 78;
+    --sidebar-accent-foreground: 0.32 0.04 48;
+    --sidebar-border: 0.88 0.025 78;
+    --sidebar-ring: 0.61 0.17 38;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Outfit", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+    font-weight: 700;
+  }
+}
+
+@layer utilities {
+  .veg-indicator {
+    @apply text-emerald-700 bg-emerald-50 border-emerald-200;
+  }
+  .nonveg-indicator {
+    @apply text-red-700 bg-red-50 border-red-200;
+  }
+  .score-high {
+    @apply bg-emerald-500;
+  }
+  .score-mid {
+    @apply bg-amber-500;
+  }
+  .score-low {
+    @apply bg-orange-500;
+  }
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+  }
+  .glass {
+    background: oklch(0.99 0.008 78 / 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
