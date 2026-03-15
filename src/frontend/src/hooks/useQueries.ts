@@ -2,6 +2,26 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Recipe, RecipeMatch, UserProfile } from "../backend";
 import { useActor } from "./useActor";
 
+function ingredientMatches(ingredient: string, available: string): boolean {
+  const ing = ingredient.toLowerCase();
+  const avail = available.toLowerCase();
+  return ing.includes(avail) || avail.includes(ing);
+}
+
+function computeMatchScore(recipe: Recipe, available: string[]): number {
+  if (recipe.ingredients.length === 0) return 0;
+  let count = 0;
+  for (const ing of recipe.ingredients) {
+    for (const avail of available) {
+      if (ingredientMatches(ing, avail)) {
+        count++;
+        break;
+      }
+    }
+  }
+  return Math.round((count * 100) / recipe.ingredients.length);
+}
+
 export function useSearchRecipes(
   ingredients: string[],
   isVeg: boolean | null,
@@ -14,12 +34,30 @@ export function useSearchRecipes(
     queryKey: ["searchRecipes", ingredients, isVeg, maxTime, difficulty],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.searchRecipes(
-        ingredients,
-        isVeg,
-        maxTime != null ? BigInt(maxTime) : null,
-        difficulty,
-      );
+      let all = await actor.getAllRecipes();
+
+      // Apply filters
+      if (isVeg !== null) {
+        all = all.filter((r) => r.isVeg === isVeg);
+      }
+      if (maxTime !== null) {
+        all = all.filter((r) => Number(r.estimatedTimeMinutes) <= maxTime);
+      }
+      if (difficulty !== null && difficulty !== "") {
+        all = all.filter(
+          (r) => r.difficulty.toLowerCase() === difficulty.toLowerCase(),
+        );
+      }
+
+      // Score and sort
+      const matches: RecipeMatch[] = all.map((recipe) => ({
+        recipe,
+        matchScore: BigInt(computeMatchScore(recipe, ingredients)),
+      }));
+
+      matches.sort((a, b) => Number(b.matchScore) - Number(a.matchScore));
+
+      return matches.filter((m) => Number(m.matchScore) > 0);
     },
     enabled: enabled && !!actor && !isFetching && ingredients.length > 0,
   });
