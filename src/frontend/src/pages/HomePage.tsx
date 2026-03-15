@@ -13,6 +13,8 @@ import { Toggle } from "@/components/ui/toggle";
 import { useNavigate } from "@tanstack/react-router";
 import {
   ChefHat,
+  ChevronDown,
+  ChevronUp,
   Leaf,
   Mic,
   MicOff,
@@ -72,6 +74,106 @@ const COMMON_INGREDIENTS = [
   "celery",
 ];
 
+const CATEGORIZED_INGREDIENTS: Record<string, string[]> = {
+  Vegetables: [
+    "onion",
+    "garlic",
+    "tomato",
+    "potato",
+    "carrot",
+    "spinach",
+    "mushroom",
+    "bell pepper",
+    "broccoli",
+    "cauliflower",
+    "cabbage",
+    "zucchini",
+    "eggplant",
+    "corn",
+    "peas",
+    "celery",
+    "ginger",
+    "cucumber",
+    "beetroot",
+    "pumpkin",
+  ],
+  Proteins: [
+    "chicken",
+    "eggs",
+    "beef",
+    "fish",
+    "shrimp",
+    "tofu",
+    "paneer",
+    "lentils",
+    "beans",
+    "chickpeas",
+    "mutton",
+    "prawns",
+  ],
+  "Dairy & Fats": [
+    "milk",
+    "butter",
+    "cream",
+    "cheese",
+    "yogurt",
+    "ghee",
+    "coconut milk",
+  ],
+  "Grains & Pasta": [
+    "rice",
+    "pasta",
+    "flour",
+    "bread",
+    "oats",
+    "noodles",
+    "semolina",
+  ],
+  "Spices & Herbs": [
+    "cumin",
+    "pepper",
+    "salt",
+    "basil",
+    "oregano",
+    "thyme",
+    "rosemary",
+    "turmeric",
+    "chili",
+    "coriander",
+    "curry leaves",
+    "tamarind",
+  ],
+  "Oils & Sauces": [
+    "olive oil",
+    "soy sauce",
+    "vinegar",
+    "lemon",
+    "coconut oil",
+  ],
+};
+
+const CATEGORY_COLORS: Record<string, string> = {
+  Vegetables:
+    "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+  Proteins: "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100",
+  "Dairy & Fats":
+    "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
+  "Grains & Pasta":
+    "bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100",
+  "Spices & Herbs":
+    "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100",
+  "Oils & Sauces": "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
+};
+
+const CATEGORY_LABEL_COLORS: Record<string, string> = {
+  Vegetables: "text-emerald-600",
+  Proteins: "text-rose-600",
+  "Dairy & Fats": "text-amber-600",
+  "Grains & Pasta": "text-yellow-600",
+  "Spices & Herbs": "text-orange-600",
+  "Oils & Sauces": "text-blue-600",
+};
+
 export default function HomePage() {
   const navigate = useNavigate();
   const { ingredients, filters, addIngredient, removeIngredient, setFilters } =
@@ -80,6 +182,7 @@ export default function HomePage() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (val: string) => {
@@ -154,6 +257,11 @@ export default function HomePage() {
     60: "1h",
     90: "1.5h",
   };
+
+  const categoryEntries = Object.entries(CATEGORIZED_INGREDIENTS);
+  const visibleCategories = showAllCategories
+    ? categoryEntries
+    : categoryEntries.slice(0, 3);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 md:py-12">
@@ -243,25 +351,71 @@ export default function HomePage() {
           </Button>
         </div>
 
-        {/* Quick add chips */}
+        {/* Categorized quick add */}
         <div className="mb-4">
-          <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">
-            Quick add
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {COMMON_INGREDIENTS.slice(0, 10)
-              .filter((i) => !ingredients.includes(i))
-              .map((ing) => (
-                <button
-                  type="button"
-                  key={ing}
-                  onClick={() => handleAddIngredient(ing)}
-                  className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground hover:bg-primary/10 hover:text-primary transition-colors capitalize border border-border"
-                >
-                  + {ing}
-                </button>
-              ))}
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+              Quick Add Ingredients
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowAllCategories(!showAllCategories)}
+              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors font-medium"
+              data-ocid="home.toggle"
+            >
+              {showAllCategories ? (
+                <>
+                  Show less <ChevronUp className="w-3 h-3" />
+                </>
+              ) : (
+                <>
+                  Show all categories <ChevronDown className="w-3 h-3" />
+                </>
+              )}
+            </button>
           </div>
+
+          <AnimatePresence initial={false}>
+            <div className="space-y-3">
+              {visibleCategories.map(([category, items]) => {
+                const available = items.filter((i) => !ingredients.includes(i));
+                if (available.length === 0) return null;
+                return (
+                  <motion.div
+                    key={category}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <p
+                      className={`text-[10px] font-semibold uppercase tracking-wider mb-1.5 ${
+                        CATEGORY_LABEL_COLORS[category] ??
+                        "text-muted-foreground"
+                      }`}
+                    >
+                      {category}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {available.map((ing) => (
+                        <button
+                          type="button"
+                          key={ing}
+                          onClick={() => handleAddIngredient(ing)}
+                          className={`text-xs px-2.5 py-1 rounded-full transition-all capitalize border font-medium ${
+                            CATEGORY_COLORS[category] ??
+                            "bg-secondary text-secondary-foreground border-border hover:bg-primary/10 hover:text-primary"
+                          }`}
+                        >
+                          + {ing}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </AnimatePresence>
         </div>
 
         {/* Selected ingredients */}

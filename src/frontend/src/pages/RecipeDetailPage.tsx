@@ -10,6 +10,7 @@ import {
   Leaf,
   Loader2,
   ShoppingCart,
+  Youtube,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
@@ -33,7 +34,7 @@ function difficultyColor(d: string) {
 export default function RecipeDetailPage() {
   const navigate = useNavigate();
   const { id } = recipeDetailRoute.useParams();
-  const { ingredients: userIngredients } = useIngredients();
+  const { ingredients: userIngredients, lastSearchResults } = useIngredients();
   const { identity } = useInternetIdentity();
   const { openLoginModal } = useLoginModal();
   const { data: allRecipes = [], isLoading } = useGetAllRecipes();
@@ -41,9 +42,26 @@ export default function RecipeDetailPage() {
   const addFavorite = useAddFavorite();
   const removeFavorite = useRemoveFavorite();
 
-  const recipe = allRecipes.find((r) => String(r.id) === id);
+  // First try to find in lastSearchResults (instant, no network call needed)
+  const recipeFromSearch = lastSearchResults.find(
+    (m) => String(m.recipe.id) === id,
+  )?.recipe;
+
+  // Fall back to allRecipes from backend
+  const recipeFromAll = allRecipes.find((r) => String(r.id) === id);
+
+  const recipe = recipeFromSearch ?? recipeFromAll;
+
+  // Only show loading spinner if we don't have the recipe from search results yet
+  const showLoading = !recipeFromSearch && isLoading;
+
   const isFavorited = favorites.some((f) => String(f.id) === id);
-  const score = 75;
+  const score = recipeFromSearch
+    ? Number(
+        lastSearchResults.find((m) => String(m.recipe.id) === id)?.matchScore ??
+          75,
+      )
+    : 75;
 
   const handleFavoriteToggle = async () => {
     if (!identity) {
@@ -60,9 +78,12 @@ export default function RecipeDetailPage() {
     }
   };
 
-  if (isLoading) {
+  if (showLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div
+        className="flex items-center justify-center min-h-[60vh]"
+        data-ocid="recipe_detail.loading_state"
+      >
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </div>
     );
@@ -70,7 +91,10 @@ export default function RecipeDetailPage() {
 
   if (!recipe) {
     return (
-      <div className="text-center py-24 px-4">
+      <div
+        className="text-center py-24 px-4"
+        data-ocid="recipe_detail.error_state"
+      >
         <p className="text-foreground font-medium mb-4">Recipe not found</p>
         <Button onClick={() => navigate({ to: "/recipes" })}>
           Back to Recipes
@@ -86,6 +110,9 @@ export default function RecipeDetailPage() {
         u.toLowerCase().includes(ing.toLowerCase()),
     );
 
+  const uniqueIngredients = [...new Set(recipe.ingredients)];
+  const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${recipe.name} recipe`)}`;
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <Button
@@ -93,6 +120,7 @@ export default function RecipeDetailPage() {
         size="sm"
         onClick={() => navigate({ to: "/recipes" })}
         className="mb-5 -ml-2 rounded-xl hover:bg-secondary"
+        data-ocid="recipe_detail.back.button"
       >
         <ArrowLeft className="w-4 h-4 mr-1.5" />
         Back to results
@@ -185,7 +213,7 @@ export default function RecipeDetailPage() {
             Ingredients
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {recipe.ingredients.map((ing) => {
+            {uniqueIngredients.map((ing) => {
               const have = hasIngredient(ing);
               return (
                 <div
@@ -221,7 +249,7 @@ export default function RecipeDetailPage() {
         </div>
 
         {/* Steps */}
-        <div className="bg-card border border-border rounded-2xl shadow-card p-5 mb-6">
+        <div className="bg-card border border-border rounded-2xl shadow-card p-5 mb-5">
           <h2 className="font-display text-lg font-bold text-foreground mb-4">
             Cooking Instructions
           </h2>
@@ -245,6 +273,18 @@ export default function RecipeDetailPage() {
           </div>
         </div>
 
+        {/* YouTube Search Link */}
+        <a
+          href={youtubeSearchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-ocid="recipe_detail.youtube.link"
+          className="flex items-center justify-center gap-2.5 w-full mb-4 px-5 py-3.5 rounded-xl bg-[#FF0000] hover:bg-[#cc0000] active:bg-[#aa0000] text-white font-semibold text-sm transition-colors duration-200 shadow-sm"
+        >
+          <Youtube className="w-5 h-5" />
+          Search this recipe on YouTube
+        </a>
+
         {/* Save CTA */}
         <Button
           size="lg"
@@ -254,7 +294,7 @@ export default function RecipeDetailPage() {
               : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-warm"
           }`}
           onClick={handleFavoriteToggle}
-          data-ocid="recipe_detail.save_button"
+          data-ocid="recipe_detail.primary_button"
         >
           <Heart
             className={`w-5 h-5 mr-2 ${isFavorited ? "fill-current" : ""}`}

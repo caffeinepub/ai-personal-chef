@@ -1,4 +1,5 @@
 import { type ReactNode, createContext, useContext, useState } from "react";
+import type { RecipeMatch } from "../backend";
 
 export interface RecipeFilters {
   isVeg: boolean | null;
@@ -9,10 +10,12 @@ export interface RecipeFilters {
 interface IngredientsContextType {
   ingredients: string[];
   filters: RecipeFilters;
+  lastSearchResults: RecipeMatch[];
   addIngredient: (ingredient: string) => void;
   removeIngredient: (ingredient: string) => void;
   clearIngredients: () => void;
   setFilters: (filters: RecipeFilters) => void;
+  setLastSearchResults: (results: RecipeMatch[]) => void;
 }
 
 const IngredientsContext = createContext<IngredientsContextType | undefined>(
@@ -26,6 +29,7 @@ export function IngredientsProvider({ children }: { children: ReactNode }) {
     maxTime: null,
     difficulty: null,
   });
+  const [lastSearchResults, setLastSearchResults] = useState<RecipeMatch[]>([]);
 
   const addIngredient = (ingredient: string) => {
     const normalized = ingredient.trim().toLowerCase();
@@ -45,10 +49,12 @@ export function IngredientsProvider({ children }: { children: ReactNode }) {
       value={{
         ingredients,
         filters,
+        lastSearchResults,
         addIngredient,
         removeIngredient,
         clearIngredients,
         setFilters,
+        setLastSearchResults,
       }}
     >
       {children}

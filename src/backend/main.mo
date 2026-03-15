@@ -168,20 +168,7 @@ actor {
     recipes.values().toArray();
   };
 
-  public shared ({ caller }) func searchRecipes(availableIngredients : [Text], isVeg : ?Bool, maxTimeMinutes : ?Nat, difficulty : ?Text) : async [RecipeMatch] {
-    if (AccessControl.hasPermission(accessControlState, caller, #user)) {
-      switch (userProfiles.get(caller)) {
-        case (?profile) {
-          let updatedProfile = { profile with searchesPerformed = profile.searchesPerformed + 1; };
-          userProfiles.add(caller, updatedProfile);
-        };
-        case (null) {
-          let newProfile = { displayName = ""; favoriteCount = 0; searchesPerformed = 1; };
-          userProfiles.add(caller, newProfile);
-        };
-      };
-    };
-
+  public query func searchRecipes(availableIngredients : [Text], isVeg : ?Bool, maxTimeMinutes : ?Nat, difficulty : ?Text) : async [RecipeMatch] {
     var filteredRecipes = recipes.values().toArray();
 
     if (isVeg != null) {
@@ -216,7 +203,11 @@ actor {
       }
     );
 
-    let sorted = matches.sort();
+    let sorted = matches.sort(func(a : RecipeMatch, b : RecipeMatch) : Order.Order {
+      if (a.matchScore > b.matchScore) #less
+      else if (a.matchScore < b.matchScore) #greater
+      else #equal
+    });
     sorted;
   };
 

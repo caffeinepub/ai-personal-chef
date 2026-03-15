@@ -1,8 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ChefHat, Loader2, UtensilsCrossed } from "lucide-react";
+import {
+  ArrowLeft,
+  ChefHat,
+  Loader2,
+  Play,
+  UtensilsCrossed,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect } from "react";
 import type { RecipeMatch } from "../backend";
 import RecipeCard from "../components/RecipeCard";
 import { useIngredients } from "../context/IngredientsContext";
@@ -78,7 +85,7 @@ const SMART_SUGGESTIONS: RecipeMatch[] = [
 
 export default function RecipesPage() {
   const navigate = useNavigate();
-  const { ingredients, filters } = useIngredients();
+  const { ingredients, filters, setLastSearchResults } = useIngredients();
   const {
     data: results,
     isLoading,
@@ -91,13 +98,25 @@ export default function RecipesPage() {
     true,
   );
 
-  const showSuggestions = !isLoading && results && results.length === 0;
+  const showSuggestions =
+    !isLoading && ingredients.length > 0 && (!results || results.length === 0);
   const displayResults =
     results && results.length > 0
       ? results
       : showSuggestions
         ? SMART_SUGGESTIONS
         : [];
+
+  // Save results to context so RecipeDetailPage can use them without re-fetching
+  useEffect(() => {
+    if (results && results.length > 0) {
+      setLastSearchResults(results);
+    } else if (showSuggestions) {
+      setLastSearchResults(SMART_SUGGESTIONS);
+    }
+  }, [results, showSuggestions, setLastSearchResults]);
+
+  const videoRecipes = displayResults.slice(0, 6);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
@@ -108,6 +127,7 @@ export default function RecipesPage() {
           size="icon"
           onClick={() => navigate({ to: "/home" })}
           className="rounded-xl hover:bg-secondary"
+          data-ocid="recipes.back.button"
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
@@ -218,6 +238,80 @@ export default function RecipesPage() {
             ))}
           </AnimatePresence>
         </div>
+      )}
+
+      {/* Watch & Learn — YouTube Videos */}
+      {!isLoading && !isError && videoRecipes.length > 0 && (
+        <motion.section
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-12"
+          data-ocid="recipes.panel"
+        >
+          {/* Section header */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center flex-shrink-0">
+              <Play className="w-4 h-4 text-red-500 fill-red-500" />
+            </div>
+            <div>
+              <h2 className="font-display text-xl font-bold text-foreground">
+                Watch &amp; Learn
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Video tutorials for your matched recipes
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {videoRecipes.map((match, i) => {
+              const encodedName = encodeURIComponent(
+                `${match.recipe.name} recipe`,
+              );
+              const embedUrl = `https://www.youtube-nocookie.com/embed?listType=search&list=${encodedName}`;
+              return (
+                <motion.div
+                  key={`video-${String(match.recipe.id)}`}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.08 }}
+                  className="bg-card border border-border rounded-2xl overflow-hidden shadow-card"
+                  data-ocid="recipes.card"
+                >
+                  {/* Video embed */}
+                  <div className="aspect-video w-full bg-muted relative">
+                    <iframe
+                      src={embedUrl}
+                      title={`${match.recipe.name} recipe video`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      loading="lazy"
+                      className="w-full h-full"
+                    />
+                  </div>
+                  {/* Caption */}
+                  <div className="px-4 py-3">
+                    <h3 className="font-semibold text-sm text-foreground capitalize line-clamp-1">
+                      {match.recipe.name}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] capitalize"
+                      >
+                        {match.recipe.cuisine}
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">
+                        {Number(match.recipe.estimatedTimeMinutes)} min
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
       )}
     </div>
   );
