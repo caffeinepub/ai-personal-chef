@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Calculator, IndianRupee } from "lucide-react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import type { Recipe } from "../backend";
 import { useIngredients } from "../context/IngredientsContext";
@@ -41,6 +41,8 @@ export default function BudgetPage() {
   const { ingredients: contextIngredients } = useIngredients();
   const [budgetMax, setBudgetMax] = useState<number>(Number.POSITIVE_INFINITY);
   const [calcInput, setCalcInput] = useState(contextIngredients.join(", "));
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedCalcId, setExpandedCalcId] = useState<number | null>(null);
 
   const recipesWithCost = STATIC_RECIPES.map((r) => ({
     ...r,
@@ -151,15 +153,53 @@ export default function BudgetPage() {
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="font-semibold text-sm text-foreground leading-tight">
+                  <button
+                    type="button"
+                    className="font-semibold text-sm text-foreground leading-tight cursor-pointer hover:text-emerald-600 underline decoration-dotted transition-colors text-left"
+                    onClick={() =>
+                      setExpandedId(
+                        expandedId === Number(recipe.id)
+                          ? null
+                          : Number(recipe.id),
+                      )
+                    }
+                    data-ocid={`budget.recipe_name.${i + 1}`}
+                  >
                     {recipe.name}
-                  </h3>
+                  </button>
                   <Badge
                     className={`shrink-0 text-xs border ${costColor(recipe.cost)}`}
                   >
                     ₹{recipe.cost}
                   </Badge>
                 </div>
+
+                {/* Expandable ingredients */}
+                <AnimatePresence initial={false}>
+                  {expandedId === Number(recipe.id) && (
+                    <motion.div
+                      key="ingredients"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="flex flex-wrap gap-1 pt-1 pb-2">
+                        {recipe.ingredients.map((ing) => (
+                          <Badge
+                            key={ing}
+                            variant="outline"
+                            className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200"
+                          >
+                            {ing}
+                          </Badge>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
                   {recipe.description}
                 </p>
@@ -255,22 +295,58 @@ export default function BudgetPage() {
           {calcResults.map((recipe, i) => (
             <div
               key={String(recipe.id)}
-              className="flex items-center justify-between gap-2 p-3 rounded-xl bg-secondary/40 border border-border"
+              className="p-3 rounded-xl bg-secondary/40 border border-border"
               data-ocid={`budget.calc_result.${i + 1}`}
             >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  className="font-semibold text-sm text-foreground cursor-pointer hover:text-emerald-600 underline decoration-dotted transition-colors text-left"
+                  onClick={() =>
+                    setExpandedCalcId(
+                      expandedCalcId === Number(recipe.id)
+                        ? null
+                        : Number(recipe.id),
+                    )
+                  }
+                  data-ocid={`budget.calc_recipe_name.${i + 1}`}
+                >
                   {recipe.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {recipe.cuisine} · {Number(recipe.estimatedTimeMinutes)}m
-                </p>
+                </button>
+                <Badge
+                  className={`shrink-0 text-xs border ${costColor(recipe.cost)}`}
+                >
+                  ₹{recipe.cost}
+                </Badge>
               </div>
-              <Badge
-                className={`shrink-0 text-xs border ${costColor(recipe.cost)}`}
-              >
-                ₹{recipe.cost}
-              </Badge>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {recipe.cuisine} · {Number(recipe.estimatedTimeMinutes)}m
+              </p>
+              {/* Expandable ingredients */}
+              <AnimatePresence initial={false}>
+                {expandedCalcId === Number(recipe.id) && (
+                  <motion.div
+                    key="calc-ingredients"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-wrap gap-1 pt-2">
+                      {recipe.ingredients.map((ing) => (
+                        <Badge
+                          key={ing}
+                          variant="outline"
+                          className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200"
+                        >
+                          {ing}
+                        </Badge>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
         </div>

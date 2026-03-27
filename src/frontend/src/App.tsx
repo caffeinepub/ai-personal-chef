@@ -12,6 +12,7 @@ import {
   ChefHat,
   DollarSign,
   Heart,
+  MapPin,
   Trophy,
   User,
   Zap,
@@ -30,6 +31,7 @@ import NutritionPage from "./pages/NutritionPage";
 import ProfilePage from "./pages/ProfilePage";
 import RecipeDetailPage from "./pages/RecipeDetailPage";
 import RecipesPage from "./pages/RecipesPage";
+import RegionalPage from "./pages/RegionalPage";
 
 function RootLayout() {
   return (
@@ -118,6 +120,17 @@ function AppLayout() {
             Nutrition
           </Link>
           <Link
+            to="/regional"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            activeProps={{
+              className:
+                "px-3 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10",
+            }}
+            data-ocid="nav.regional_link"
+          >
+            Regions
+          </Link>
+          <Link
             to="/favorites"
             className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             activeProps={{
@@ -187,16 +200,16 @@ function AppLayout() {
             <span className="text-[9px] font-medium">Challenges</span>
           </Link>
           <Link
-            to="/budget"
+            to="/regional"
             className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-muted-foreground"
             activeProps={{
               className:
                 "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-primary",
             }}
-            data-ocid="nav.budget_link"
+            data-ocid="nav.regional_link"
           >
-            <DollarSign className="w-5 h-5" />
-            <span className="text-[9px] font-medium">Budget</span>
+            <MapPin className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Regions</span>
           </Link>
           <Link
             to="/nutrition"
@@ -272,6 +285,11 @@ const nutritionRoute = createRoute({
   path: "/nutrition",
   component: NutritionPage,
 });
+const regionalRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/regional",
+  component: RegionalPage,
+});
 
 const routeTree = rootRoute.addChildren([
   landingRoute,
@@ -285,6 +303,7 @@ const routeTree = rootRoute.addChildren([
     challengesRoute,
     budgetRoute,
     nutritionRoute,
+    regionalRoute,
   ]),
 ]);
 
