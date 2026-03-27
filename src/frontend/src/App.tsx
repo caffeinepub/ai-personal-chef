@@ -7,14 +7,26 @@ import {
   createRoute,
   createRouter,
 } from "@tanstack/react-router";
-import { ChefHat, Heart, User } from "lucide-react";
+import {
+  CalendarDays,
+  ChefHat,
+  DollarSign,
+  Heart,
+  Trophy,
+  User,
+  Zap,
+} from "lucide-react";
 import LoginModal from "./components/LoginModal";
 import { IngredientsProvider } from "./context/IngredientsContext";
 import { LoginProvider } from "./context/LoginContext";
 import { useInternetIdentity } from "./hooks/useInternetIdentity";
+import BudgetPage from "./pages/BudgetPage";
+import ChallengesPage from "./pages/ChallengesPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import HomePage from "./pages/HomePage";
 import LandingPage from "./pages/LandingPage";
+import MealPlannerPage from "./pages/MealPlannerPage";
+import NutritionPage from "./pages/NutritionPage";
 import ProfilePage from "./pages/ProfilePage";
 import RecipeDetailPage from "./pages/RecipeDetailPage";
 import RecipesPage from "./pages/RecipesPage";
@@ -52,32 +64,76 @@ function AppLayout() {
         <nav className="flex items-center gap-1">
           <Link
             to="/home"
-            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             activeProps={{
               className:
-                "px-4 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10",
+                "px-3 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10",
             }}
             data-ocid="nav.home_link"
           >
             Home
           </Link>
           <Link
-            to="/favorites"
-            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            to="/meal-planner"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             activeProps={{
               className:
-                "px-4 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10",
+                "px-3 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10",
+            }}
+            data-ocid="nav.meal_planner_link"
+          >
+            Planner
+          </Link>
+          <Link
+            to="/challenges"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            activeProps={{
+              className:
+                "px-3 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10",
+            }}
+            data-ocid="nav.challenges_link"
+          >
+            Challenges
+          </Link>
+          <Link
+            to="/budget"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            activeProps={{
+              className:
+                "px-3 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10",
+            }}
+            data-ocid="nav.budget_link"
+          >
+            Budget
+          </Link>
+          <Link
+            to="/nutrition"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            activeProps={{
+              className:
+                "px-3 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10",
+            }}
+            data-ocid="nav.nutrition_link"
+          >
+            Nutrition
+          </Link>
+          <Link
+            to="/favorites"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            activeProps={{
+              className:
+                "px-3 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10",
             }}
             data-ocid="nav.favorites_link"
           >
-            Favorites
+            Saved
           </Link>
           <Link
             to="/profile"
-            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             activeProps={{
               className:
-                "px-4 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10",
+                "px-3 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10",
             }}
             data-ocid="nav.profile_link"
           >
@@ -91,44 +147,68 @@ function AppLayout() {
         <Outlet />
       </main>
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav — 5 primary tabs */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border">
-        <div className="flex items-center justify-around px-4 py-2">
+        <div className="flex items-center justify-around px-2 py-2">
           <Link
             to="/home"
-            className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl text-muted-foreground"
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-muted-foreground"
             activeProps={{
               className:
-                "flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl text-primary",
+                "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-primary",
             }}
             data-ocid="nav.home_link"
           >
             <ChefHat className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Chef</span>
+            <span className="text-[9px] font-medium">Chef</span>
           </Link>
           <Link
-            to="/favorites"
-            className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl text-muted-foreground"
+            to="/meal-planner"
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-muted-foreground"
             activeProps={{
               className:
-                "flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl text-primary",
+                "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-primary",
             }}
-            data-ocid="nav.favorites_link"
+            data-ocid="nav.meal_planner_link"
           >
-            <Heart className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Saved</span>
+            <CalendarDays className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Planner</span>
           </Link>
           <Link
-            to="/profile"
-            className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl text-muted-foreground"
+            to="/challenges"
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-muted-foreground"
             activeProps={{
               className:
-                "flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl text-primary",
+                "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-primary",
             }}
-            data-ocid="nav.profile_link"
+            data-ocid="nav.challenges_link"
           >
-            <User className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Profile</span>
+            <Trophy className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Challenges</span>
+          </Link>
+          <Link
+            to="/budget"
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-muted-foreground"
+            activeProps={{
+              className:
+                "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-primary",
+            }}
+            data-ocid="nav.budget_link"
+          >
+            <DollarSign className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Budget</span>
+          </Link>
+          <Link
+            to="/nutrition"
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-muted-foreground"
+            activeProps={{
+              className:
+                "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-primary",
+            }}
+            data-ocid="nav.nutrition_link"
+          >
+            <Zap className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Nutrition</span>
           </Link>
         </div>
       </nav>
@@ -172,6 +252,26 @@ const profileRoute = createRoute({
   path: "/profile",
   component: ProfilePage,
 });
+const mealPlannerRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/meal-planner",
+  component: MealPlannerPage,
+});
+const challengesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/challenges",
+  component: ChallengesPage,
+});
+const budgetRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/budget",
+  component: BudgetPage,
+});
+const nutritionRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/nutrition",
+  component: NutritionPage,
+});
 
 const routeTree = rootRoute.addChildren([
   landingRoute,
@@ -181,6 +281,10 @@ const routeTree = rootRoute.addChildren([
     recipeDetailRoute,
     favoritesRoute,
     profileRoute,
+    mealPlannerRoute,
+    challengesRoute,
+    budgetRoute,
+    nutritionRoute,
   ]),
 ]);
 

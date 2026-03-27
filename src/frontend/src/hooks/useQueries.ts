@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Recipe, RecipeMatch, UserProfile } from "../backend";
+import { STATIC_RECIPES } from "../data/recipes";
 import { useActor } from "./useActor";
 
 function ingredientMatches(ingredient: string, available: string): boolean {
@@ -9,9 +10,12 @@ function ingredientMatches(ingredient: string, available: string): boolean {
 }
 
 function computeMatchScore(recipe: Recipe, available: string[]): number {
-  if (recipe.ingredients.length === 0) return 0;
+  const uniqueIngredients = [
+    ...new Set(recipe.ingredients.map((i) => i.toLowerCase().trim())),
+  ].filter(Boolean);
+  if (uniqueIngredients.length === 0) return 0;
   let count = 0;
-  for (const ing of recipe.ingredients) {
+  for (const ing of uniqueIngredients) {
     for (const avail of available) {
       if (ingredientMatches(ing, avail)) {
         count++;
@@ -19,7 +23,7 @@ function computeMatchScore(recipe: Recipe, available: string[]): number {
       }
     }
   }
-  return Math.round((count * 100) / recipe.ingredients.length);
+  return Math.round((count * 100) / uniqueIngredients.length);
 }
 
 export function useSearchRecipes(
@@ -28,15 +32,20 @@ export function useSearchRecipes(
   maxTime: number | null,
   difficulty: string | null,
   enabled: boolean,
+  cuisine?: string | null,
 ) {
-  const { actor, isFetching } = useActor();
   return useQuery<RecipeMatch[]>({
-    queryKey: ["searchRecipes", ingredients, isVeg, maxTime, difficulty],
-    queryFn: async () => {
-      if (!actor) return [];
-      let all = await actor.getAllRecipes();
+    queryKey: [
+      "searchRecipes",
+      ingredients,
+      isVeg,
+      maxTime,
+      difficulty,
+      cuisine,
+    ],
+    queryFn: () => {
+      let all = [...STATIC_RECIPES];
 
-      // Apply filters
       if (isVeg !== null) {
         all = all.filter((r) => r.isVeg === isVeg);
       }
@@ -48,8 +57,12 @@ export function useSearchRecipes(
           (r) => r.difficulty.toLowerCase() === difficulty.toLowerCase(),
         );
       }
+      if (cuisine !== null && cuisine !== undefined && cuisine !== "") {
+        all = all.filter(
+          (r) => r.cuisine.toLowerCase() === cuisine.toLowerCase(),
+        );
+      }
 
-      // Score and sort
       const matches: RecipeMatch[] = all.map((recipe) => ({
         recipe,
         matchScore: BigInt(computeMatchScore(recipe, ingredients)),
@@ -59,7 +72,7 @@ export function useSearchRecipes(
 
       return matches.filter((m) => Number(m.matchScore) > 0);
     },
-    enabled: enabled && !!actor && !isFetching && ingredients.length > 0,
+    enabled: enabled && ingredients.length > 0,
   });
 }
 
@@ -76,14 +89,10 @@ export function useGetFavorites() {
 }
 
 export function useGetAllRecipes() {
-  const { actor, isFetching } = useActor();
   return useQuery<Recipe[]>({
     queryKey: ["allRecipes"],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllRecipes();
-    },
-    enabled: !!actor && !isFetching,
+    queryFn: () => [...STATIC_RECIPES],
+    enabled: true,
   });
 }
 

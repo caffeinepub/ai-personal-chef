@@ -61,7 +61,12 @@ export default function RecipeCard({
     }
   };
 
-  const matchedCount = recipe.ingredients.filter((ing) =>
+  // Deduplicate ingredients
+  const uniqueIngredients = [
+    ...new Set(recipe.ingredients.map((i) => i.toLowerCase().trim())),
+  ].filter(Boolean);
+
+  const matchedCount = uniqueIngredients.filter((ing) =>
     userIngredients.some(
       (u) =>
         ing.toLowerCase().includes(u.toLowerCase()) ||
@@ -70,8 +75,8 @@ export default function RecipeCard({
   ).length;
 
   // Ingredient chips — first 5, with overflow count
-  const visibleIngredients = recipe.ingredients.slice(0, 5);
-  const extraCount = recipe.ingredients.length - visibleIngredients.length;
+  const visibleIngredients = uniqueIngredients.slice(0, 5);
+  const extraCount = uniqueIngredients.length - visibleIngredients.length;
 
   return (
     <button
@@ -176,7 +181,7 @@ export default function RecipeCard({
             </Badge>
             {userIngredients.length > 0 && (
               <span className="text-xs text-muted-foreground">
-                {matchedCount}/{recipe.ingredients.length} ingr.
+                {matchedCount}/{uniqueIngredients.length} ingr.
               </span>
             )}
           </div>

@@ -10,17 +10,21 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Toggle } from "@/components/ui/toggle";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
+  CalendarDays,
   ChefHat,
   ChevronDown,
   ChevronUp,
+  DollarSign,
   Leaf,
   Mic,
   MicOff,
   Search,
   SlidersHorizontal,
+  Trophy,
   X,
+  Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useRef, useState } from "react";
@@ -174,6 +178,41 @@ const CATEGORY_LABEL_COLORS: Record<string, string> = {
   "Oils & Sauces": "text-blue-600",
 };
 
+const FEATURE_CARDS = [
+  {
+    to: "/meal-planner",
+    icon: CalendarDays,
+    title: "AI Meal Planner",
+    desc: "Weekly plans, budget options & auto grocery list",
+    color: "bg-violet-50 border-violet-200 hover:bg-violet-100",
+    iconColor: "text-violet-600",
+  },
+  {
+    to: "/challenges",
+    icon: Trophy,
+    title: "Cooking Challenges",
+    desc: "Daily challenges, points, badges & leaderboard",
+    color: "bg-amber-50 border-amber-200 hover:bg-amber-100",
+    iconColor: "text-amber-600",
+  },
+  {
+    to: "/budget",
+    icon: DollarSign,
+    title: "Budget Cooking",
+    desc: "₹100 meal ideas & smart cost calculator",
+    color: "bg-emerald-50 border-emerald-200 hover:bg-emerald-100",
+    iconColor: "text-emerald-600",
+  },
+  {
+    to: "/nutrition",
+    icon: Zap,
+    title: "Nutrition & Health",
+    desc: "Calorie breakdown, diet plans & allergy filters",
+    color: "bg-rose-50 border-rose-200 hover:bg-rose-100",
+    iconColor: "text-rose-600",
+  },
+];
+
 export default function HomePage() {
   const navigate = useNavigate();
   const { ingredients, filters, addIngredient, removeIngredient, setFilters } =
@@ -262,6 +301,12 @@ export default function HomePage() {
   const visibleCategories = showAllCategories
     ? categoryEntries
     : categoryEntries.slice(0, 3);
+
+  const hasActiveFilters =
+    filters.isVeg !== null ||
+    filters.maxTime !== null ||
+    filters.difficulty !== null ||
+    filters.cuisine !== null;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 md:py-12">
@@ -485,9 +530,7 @@ export default function HomePage() {
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
             Filters
-            {(filters.isVeg !== null ||
-              filters.maxTime !== null ||
-              filters.difficulty !== null) && (
+            {hasActiveFilters && (
               <Badge className="bg-primary/10 text-primary border-0 text-xs">
                 Active
               </Badge>
@@ -607,6 +650,41 @@ export default function HomePage() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Cuisine */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Cuisine</span>
+                  <Select
+                    value={filters.cuisine ?? "any"}
+                    onValueChange={(val) =>
+                      setFilters({
+                        ...filters,
+                        cuisine: val === "any" ? null : val,
+                      })
+                    }
+                  >
+                    <SelectTrigger
+                      className="w-40 rounded-xl border-border text-sm"
+                      data-ocid="home.cuisine_select"
+                    >
+                      <SelectValue placeholder="Any cuisine" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any cuisine</SelectItem>
+                      <SelectItem value="Italian">Italian</SelectItem>
+                      <SelectItem value="Mediterranean">
+                        Mediterranean
+                      </SelectItem>
+                      <SelectItem value="Asian">Asian</SelectItem>
+                      <SelectItem value="Tamil Nadu">Tamil Nadu</SelectItem>
+                      <SelectItem value="Kerala">Kerala</SelectItem>
+                      <SelectItem value="Karnataka">Karnataka</SelectItem>
+                      <SelectItem value="North Indian">North Indian</SelectItem>
+                      <SelectItem value="South Indian">South Indian</SelectItem>
+                      <SelectItem value="Indian">Indian</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </motion.div>
           )}
@@ -633,6 +711,38 @@ export default function HomePage() {
             </Badge>
           )}
         </Button>
+      </motion.div>
+
+      {/* Explore Features */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="mt-8"
+      >
+        <h2 className="font-display text-lg font-bold text-foreground mb-3">
+          Explore Features
+        </h2>
+        <div className="grid grid-cols-2 gap-3">
+          {FEATURE_CARDS.map((card) => (
+            <Link
+              key={card.to}
+              to={card.to}
+              className={`flex flex-col gap-2 p-4 rounded-2xl border transition-all ${card.color}`}
+              data-ocid={`home.${card.title.toLowerCase().replace(/ /g, "_")}_link`}
+            >
+              <card.icon className={`w-6 h-6 ${card.iconColor}`} />
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {card.title}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {card.desc}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
       </motion.div>
     </div>
   );

@@ -5,6 +5,7 @@ export interface RecipeFilters {
   isVeg: boolean | null;
   maxTime: number | null;
   difficulty: string | null;
+  cuisine: string | null;
 }
 
 interface IngredientsContextType {
@@ -28,6 +29,7 @@ export function IngredientsProvider({ children }: { children: ReactNode }) {
     isVeg: null,
     maxTime: null,
     difficulty: null,
+    cuisine: null,
   });
   const [lastSearchResults, setLastSearchResults] = useState<RecipeMatch[]>([]);
 
